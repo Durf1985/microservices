@@ -1,0 +1,10 @@
+REPOSITORY                  TAG       IMAGE ID       CREATED              SIZE
+loktionov/ubuntu-tmp-file   latest    75c9c1211e2a   About a minute ago   142MB
+ubuntu                      18.04     e28a50f651f9   2 days ago           63.1MB
+nginx                       latest    1403e55ab369   2 weeks ago          142MB
+hello-world                 latest    feb5d9fea6a5   15 months ago        13.3kB
+
+The `docker inspect <u_image_id>` command allows you to get information about the docker image with the specified ID. 
+This information may include various metadata such as OS version (linux, windows, etc), docker version, creation date, layers and their quantity, etc. Is immutable, layers support read-only
+The `docker inspect <u_container_id>` command allows you to get information about a container or containers with the specified name.
+This information may include various metadata such as container status, image used, PID, network configuration, memory and CPU configuration, environment variables etc. Container creates additional read-write layer.
