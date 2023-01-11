@@ -1,0 +1,9 @@
+*.tfvars
+*.tfstate
+*.tfstate.*.backup
+*.tfstate.backup
+.terraform.lock.hcl
+.terraform/
+.tflint.hcl
+variables.json
+doc.txt
