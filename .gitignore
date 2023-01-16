@@ -7,3 +7,7 @@
 .tflint.hcl
 variables.json
 doc.txt
+venv
+gce.ini
+docker-86505-7464b9391a64.json
+.molecule

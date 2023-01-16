@@ -1,0 +1,6 @@
+---
+- name: Launcher for container on VM instaces
+  hosts: tag_reddit-docker
+  become: true
+  roles:
+    - reddit_monolith

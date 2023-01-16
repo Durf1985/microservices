@@ -1,0 +1,10 @@
+---
+- name: Show info about the env this host belongs to
+  ansible.builtin.debug:
+    msg: "This host is in {{ env }} environment!!!"
+
+- name: Install Docker
+  ansible.builtin.include_tasks: docker.yml
+  args:
+    apply:
+      become: true

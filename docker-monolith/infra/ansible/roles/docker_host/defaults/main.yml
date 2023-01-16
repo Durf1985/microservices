@@ -1,0 +1,3 @@
+---
+env: local
+os_version: "{{ ansible_distribution_release }}"

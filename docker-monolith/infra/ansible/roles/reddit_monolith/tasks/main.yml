@@ -1,0 +1,10 @@
+---
+- name: Show info about the env this host belongs to
+  ansible.builtin.debug:
+    msg: "This host is in {{ env }} environment!!!"
+
+- name: Starting the container
+  ansible.builtin.include_tasks: container_launcher.yml
+  args:
+    apply:
+      become: true
