@@ -1,0 +1,4 @@
+---
+env: local
+reddit_monolith_docker_image: fallgeratoor/otus-reddit:1.0
+monolith_reddit_access_port: 9292

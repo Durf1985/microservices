@@ -1,0 +1,25 @@
+---
+- name: Update package manager
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 300
+
+- name: Install python-pip
+  ansible.builtin.apt:
+    name: python3-pip
+    state: present
+
+- name: Install docker
+  ansible.builtin.pip:
+    name: docker
+    state: present
+
+- name: Launch a Docker container
+  ansible.builtin.docker_container:
+    name: reddit
+    image: "{{ reddit_monolith_docker_image }}"
+    state: started
+    restart_policy: always
+    network_mode: bridge
+    ports:
+      - "{{ monolith_reddit_access_port }}:9292"
