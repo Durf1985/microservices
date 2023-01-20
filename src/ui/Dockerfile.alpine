@@ -1,0 +1,29 @@
+FROM alpine:3.5 AS builder
+
+ENV POST_SERVICE_HOST post
+ENV POST_SERVICE_PORT 5000
+ENV COMMENT_SERVICE_HOST comment
+ENV COMMENT_SERVICE_PORT 9292
+
+
+RUN apk --no-cache add \
+    ruby-bundler=1.13.4-r0 \
+    ruby-dev=2.3.8-r0 \
+    build-base=0.4-r1 \
+    ruby-json=2.3.8-r0 \
+    ca-certificates=20161130-r1
+
+ENV APP_HOME /app
+RUN mkdir $APP_HOME
+WORKDIR $APP_HOME
+COPY Gemfile* $APP_HOME/
+
+
+RUN bundle install
+
+COPY . $APP_HOME
+CMD ["puma"]
+
+LABEL maintainer="Loktionov Aleksey" \
+      version="1.0" \
+      env="learning"
