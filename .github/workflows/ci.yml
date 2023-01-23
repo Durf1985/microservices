@@ -25,6 +25,7 @@ jobs:
         fi
 
         echo "SLACK_TITLE=$SLACK_TITLE" >> $GITHUB_ENV
+        git config --global --add safe.directory /srv
         curl https://raw.githubusercontent.com/loktionovam/otus-homeworks/2019-02/run.sh | bash
 
     - name: Slack Notification
