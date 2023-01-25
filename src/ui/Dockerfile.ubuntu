@@ -1,0 +1,30 @@
+FROM ubuntu:18.04
+
+ENV APP_HOME /app
+ENV POST_SERVICE_HOST post
+ENV POST_SERVICE_PORT 5000
+ENV COMMENT_SERVICE_HOST comment
+ENV COMMENT_SERVICE_PORT 9292
+
+RUN mkdir $APP_HOME
+WORKDIR $APP_HOME
+
+RUN apt-get update -qq \
+&& apt-get install -y --no-install-recommends \
+ruby-bundler=1.16.1-1 \
+ruby-dev=1:2.5.1 \
+build-essential=12.4ubuntu1 \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
+
+
+COPY Gemfile* $APP_HOME/
+RUN bundle install
+COPY . $APP_HOME
+
+
+CMD ["puma"]
+
+LABEL maintainer="Loktionov Aleksey" \
+      version="1.0" \
+      env="learning"
