@@ -83,3 +83,10 @@ docker run -d --network=reddit --network-alias=post <your-dockerhub-login>/post:
 * Use chain operators (&&) to reduce the number of layers and delete the package manager cache
 * Use multistage building
 * Use Docker-squash (there are restrictions on the reuse of some functions, for example, image layers will not be available)
+
+## Docker-Compose compose project name
+
+The base name of a project is determined by `the name of the directory` that the `docker-compose.yml` file is located in.
+By default, it can also be set by the `-p` or `--project-name` option when running `docker-compose` commands.
+This can be useful if you want to run multiple projects in the same directory. The name can be overridden by the `COMPOSE_PROJECT_NAME` environment variable
+in `.env` file.
