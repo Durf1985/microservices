@@ -1,0 +1,42 @@
+version: '3.3'
+services:
+  post_db:
+    image: mongo:${MONGO_VERSION}
+    volumes:
+      - post_db:${POST_DB_VOLUME}
+    networks:
+      - back_net
+  ui:
+    build: ./ui
+    image: ${DOCKER_HUB_USERNAME}/ui:${UI_VERSION}
+    ports:
+      - ${SRC_PORT}:${DEST_PORT}/tcp
+    networks:
+      - front_net
+  post:
+    build: ./post-py
+    image: ${DOCKER_HUB_USERNAME}/post:${POST_VERSION}
+    networks:
+      - front_net
+      - back_net
+  comment:
+    build: ./comment
+    image: ${DOCKER_HUB_USERNAME}/comment:${COMMENT_VERSION}
+    networks:
+      - front_net
+      - back_net
+
+volumes:
+  post_db:
+
+networks:
+  front_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.1.0/24
+  back_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.2.0/24
