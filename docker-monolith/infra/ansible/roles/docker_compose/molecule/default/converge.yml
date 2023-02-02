@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include docker_compose"
+      ansible.builtin.include_role:
+        name: "docker_compose"

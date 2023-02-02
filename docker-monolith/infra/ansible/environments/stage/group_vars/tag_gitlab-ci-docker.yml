@@ -1,0 +1,1 @@
+gitlab_ci_external_ip: "{{ hostvars['gitlab-ci']['gce_public_ip'] }}"

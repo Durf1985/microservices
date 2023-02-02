@@ -1,0 +1,7 @@
+---
+- name: Installing docker on an image for VM
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+    - docker_compose

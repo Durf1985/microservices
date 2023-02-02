@@ -37,6 +37,13 @@
             "ansible_env_vars": [
                 "ANSIBLE_ROLES_PATH={{ pwd }}/../ansible/roles"
             ]
+        },
+        {
+            "type": "ansible",
+            "playbook_file": "../ansible/playbooks/docker_compose_install.yml",
+            "ansible_env_vars": [
+                "ANSIBLE_ROLES_PATH={{ pwd }}/../ansible/roles"
+            ]
         }
     ]
 }

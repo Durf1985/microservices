@@ -1,0 +1,32 @@
+---
+
+- name: Show info about the env this host belongs to
+  ansible.builtin.debug:
+    msg: "This host is in {{ env }} environment!!!"
+
+- name: Show info
+  ansible.builtin.debug:
+    msg: "{{ gitlab_ci_external_ip }}"
+
+
+- name: Create GitLab directories and file
+  ansible.builtin.file:
+    path: "/srv/gitlab/{{ item }}"
+    state: directory
+  with_items:
+    - config
+    - data
+    - logs
+
+- name: Copy file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: /srv/gitlab/docker-compose.yml
+
+- name: Start the docker-compose containers
+  ansible.builtin.command: docker-compose up -d
+  args:
+    chdir: /srv/gitlab
+  register: start_docker_compose
+  failed_when: start_docker_compose.rc != 0
+  changed_when: start_docker_compose.rc == 0

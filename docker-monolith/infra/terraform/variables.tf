@@ -20,6 +20,11 @@ variable "app_disk_image" {
   description = "Disk image for reddit app"
   default     = "ubuntu-1804-lts"
 }
+variable "gitlab_disk_image" {
+  type        = string
+  description = "Disk image for gitlab-ci"
+  default     = "ubuntu-1804-lts"
+}
 
 variable "number_of_instances" {
   type        = number
