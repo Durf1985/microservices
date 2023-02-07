@@ -1,0 +1,35 @@
+---
+- name: Show info about the env this host belongs to
+  ansible.builtin.debug:
+    msg: "This host is in {{ env }} environment!!!"
+
+- name: Check if GitLab Runner container is running
+  ansible.builtin.command: "docker container inspect gitlab-runner"
+  register: gitlab_runner_running
+  failed_when: false
+  changed_when: gitlab_runner_running.rc !=0
+
+- name: Run GitLab Runner container
+  ansible.builtin.command:
+    "docker run -d --name gitlab-runner \
+    --restart always \
+    -v /srv/gitlab-runner/config:/etc/gitlab-runner \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    gitlab/gitlab-runner:{{ gitlab_runner_gitlab_version }}"
+  when: gitlab_runner_running.rc != 0
+
+
+- name: Register GitLab Runner
+  ansible.builtin.command: "docker exec -it gitlab-runner \
+    gitlab-runner register \
+    --run-untagged --locked=false \
+    --docker-privileged \
+    --non-interactive \
+    --url http://{{ gitlab_runner_vm_ip }}/ \
+    --registration-token {{ gitlab_runner_registration_token }} \
+    --description {{ runner_name }} \
+    --tag-list linux,bionic,ubuntu,docker \
+    --executor docker \
+    --docker-image alpine:{{ gitlab_runner_register_image_version }}"
+
+  changed_when: false

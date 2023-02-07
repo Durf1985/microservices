@@ -1,0 +1,6 @@
+env: local
+deploy_user: appuser
+reddit_microservice_vm_ip: 0.0.0.0
+reddit_docker_image_tag: "{{ lookup('env', 'CI_COMMIT_REF_NAME') }}"
+reddit_docker_user_name: "{{ lookup('env', 'DOCKER_HUB_USERNAME') }}"
+reddit_project_name: "dev_ops_learning"

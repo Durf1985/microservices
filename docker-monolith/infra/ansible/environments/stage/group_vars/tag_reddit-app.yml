@@ -1,0 +1,1 @@
+reddit_microservice_vm_ip: "{{ hostvars['reddit-app']['gce_public_ip'] }}"

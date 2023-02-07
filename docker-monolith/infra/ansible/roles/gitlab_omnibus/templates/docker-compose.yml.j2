@@ -1,12 +1,12 @@
 version: '3.6'
 services:
   web:
-    image: 'gitlab/gitlab-ce:latest'
+    image: 'gitlab/gitlab-ce:15.6.7-ce.0'
     restart: always
     hostname: 'gitlab.example.com'
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://{{ gitlab_ci_external_ip }}'
+        external_url 'http://{{ gitlab_omnibus_external_ip }}'
     ports:
       - '80:80'
       - '443:443'
@@ -15,5 +15,3 @@ services:
       - '/srv/gitlab/config:/etc/gitlab'
       - '/srv/gitlab/logs:/var/log/gitlab'
       - '/srv/gitlab/data:/var/opt/gitlab'
-
-# 1 отформатировать 2 создать каталог srv/gitlab 3. примонтировать

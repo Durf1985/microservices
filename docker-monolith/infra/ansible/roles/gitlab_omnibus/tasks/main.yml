@@ -6,8 +6,7 @@
 
 - name: Show info
   ansible.builtin.debug:
-    msg: "{{ gitlab_ci_external_ip }}"
-
+    msg: "{{ gitlab_omnibus_external_ip }}"
 
 - name: Create GitLab directories and file
   ansible.builtin.file:
@@ -29,4 +28,4 @@
     chdir: /srv/gitlab
   register: start_docker_compose
   failed_when: start_docker_compose.rc != 0
-  changed_when: start_docker_compose.rc == 0
+  changed_when: start_docker_compose.stderr != "Container gitlab-web-1  Running"
