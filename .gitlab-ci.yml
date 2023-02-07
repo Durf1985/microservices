@@ -1,34 +1,69 @@
-image: ruby:2.4.2
 stages:
   - build
   - test
-  - deploy
+  - review:infra
+  - review:app
+  - review:delete_infra
+  - stage
+  - production
 variables:
   DATABASE_URL: "mongodb://mongo/user_posts"
-before_script:
-  - cd reddit
-  - bundle install
+include:
+  -  /gitlab-ci/Base.gitlab-ci.yml
+
 build_job:
   stage: build
-  script:
-    - echo 'Building'
-
-test_unit_job:
-  stage: test
+  image: docker:23.0.1-git
   services:
-    - mongo:latest
+    - name: docker:23.0.1-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - docker info
   script:
-    - ruby simpletest.rb
+    - echo 'Building with help docker-compose'
+    - mv ./src/.env.example ./src/.env
+    - cat ./src/.env
+    - docker-compose -f ./src/docker-compose.yml build
+    - docker images
+    - docker login --username "${DOCKER_HUB_USERNAME}" --password "${DOCKER_HUB_PASSWD}"
+    - docker-compose -f ./src/docker-compose.yml push
 
-test_integration_job:
-  stage: test
-  script:
-    - echo 'Testing 2'
+reddit vm build:
+  stage: review:infra
+  extends:
+  - .terraform:build
 
-deploy_dev_job:
-  stage: deploy
+reddit vm deploy:
+  stage: review:infra
+  extends: .terraform:deploy
+  needs:
+    - reddit vm build
+
+reddit app deploy:
+  stage: review:app
+  variables:
+    ANSIBLE_CONFIG: ${CI_PROJECT_DIR}/docker-monolith/infra/ansible/ansible.cfg
+    deploy_user: appuser
+  image: fallgeratoor/gitlab-ansible:1.0
   script:
-    - echo 'Deploy'
-  environment:
-    name: dev
-    url: http://dev.example.com
+    - echo "$APPUSER" > ${CI_PROJECT_DIR}/appuser
+    - chmod 0600 ${CI_PROJECT_DIR}/appuser
+    - sed -i '\#vault_password_file = ~/.ansible/vault.key#d' $ANSIBLE_CONFIG
+    - sed -i 's|private_key_file = ~/.ssh/appuser|private_key_file = '${CI_PROJECT_DIR}/appuser'|g' $ANSIBLE_CONFIG
+    - mv ./src/.env.example ./src/.env
+    - chmod 755 ${CI_PROJECT_DIR}/docker-monolith/infra/ansible
+    - cd ${CI_PROJECT_DIR}/docker-monolith/infra/ansible
+    - mkdir ./gce_py
+    - echo "$GCLOUD_CREDENTIALS" > ./gce_py/docker-86505.json
+    - echo "$GCE_INI" > ./environments/stage/gce.ini
+    - ansible-inventory --list
+    - ansible-playbook playbooks/reddit_microservice.yml
+
+reddit vm delete:
+  stage: review:delete_infra
+  extends: .terraform:destroy
+  needs: []
+  when: manual

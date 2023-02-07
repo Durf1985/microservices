@@ -1,0 +1,53 @@
+image:
+  name: "fallgeratoor/gitlab-terraform:1.2"
+
+variables:
+  TF_APP: ${CI_PROJECT_DIR}/docker-monolith/infra/terraform/app
+
+cache:
+  key: "${TF_APP}" # path defined in project variable by gitlab like ${CI_PROJECT_DIR}/path/to/terraform/app
+  paths:
+    - "${TF_APP}/.terraform/"
+    - "${TF_APP}/plan.cache" # artifact caching from .terraform:build
+    - "${TF_APP}/gcloud_credentials.json"
+    - "${TF_APP}/appuser.pub"
+    - "${TF_APP}/terraform.tfvars"
+
+.terraform:build: &terraform_build
+  stage: build
+  before_script:
+  - cd "${TF_APP}"
+  - echo "$APPUSER_PUB" > ./appuser.pub
+  - mv ./terraform.tfvars.example ./terraform.tfvars
+  - terraform init
+  script:
+    - terraform plan -out=./plan.cache
+    - terraform workspace new ${CI_COMMIT_REF_NAME} || terraform workspace select ${CI_COMMIT_REF_NAME}
+  artifacts:
+    paths:
+      - ${TF_APP}/plan.cache
+
+.terraform:deploy: &terraform_deploy
+  stage: deploy
+  before_script:
+  - cd "${TF_APP}"
+  - echo "$APPUSER_PUB" > ./appuser.pub
+  - terraform init
+  script:
+    - terraform apply -auto-approve=true
+
+
+.terraform:destroy: &terraform_destroy
+  stage: cleanup
+  before_script:
+  - cd "${TF_APP}"
+  - echo "$APPUSER_PUB" > ./appuser.pub
+  - terraform init
+  script:
+    - terraform workspace select ${CI_COMMIT_REF_NAME}
+    - terraform destroy -auto-approve=true
+    - terraform workspace select default
+    - terraform workspace delete ${CI_COMMIT_REF_NAME}
+    - terraform workspace list
+  # resource_group: ${TF_STATE_NAME}
+  # when: manual

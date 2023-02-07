@@ -1,3 +1,3 @@
 ---
 env: local
-gitlab_ci_external_ip: 0.0.0.0
+gitlab_omnibus_external_ip: 0.0.0.0

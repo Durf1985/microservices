@@ -1,0 +1,25 @@
+---
+- name: Formatting and mounting a GCP drive
+  hosts: tag_gitlab-ci-docker
+  become: true
+  tasks:
+    - name: Execute mkfs.ext4 command
+      community.general.filesystem:
+        dev: /dev/sdb
+        fstype: ext4
+        opts: "-m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard"
+
+    - name: Mount the partition on /srv/gitlab/
+      ansible.posix.mount:
+        path: /srv/gitlab/
+        src: /dev/sdb
+        fstype: ext4
+        opts: discard,defaults
+        state: mounted
+
+    - name: Change file permissions for /srv/gitlab/
+      ansible.builtin.file:
+        path: /srv/gitlab
+        owner: root
+        group: root
+        mode: 0777

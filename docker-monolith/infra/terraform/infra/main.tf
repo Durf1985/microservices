@@ -51,7 +51,7 @@ provider "google" {
 
 resource "google_compute_instance" "omnibus" {
   name         = "gitlab-ci"
-  machine_type = "e2-medium"
+  machine_type = "e2-standard-2"
   zone         = var.zone
   tags         = ["gitlab-ci-docker"]
   boot_disk {
@@ -60,6 +60,11 @@ resource "google_compute_instance" "omnibus" {
       size  = 20
     }
     auto_delete = true
+  }
+  allow_stopping_for_update = true
+  attached_disk {
+    source      = google_compute_disk.gitlab_data_base.id
+    device_name = google_compute_disk.gitlab_data_base.name
   }
   network_interface {
     network = "default"
@@ -84,8 +89,15 @@ resource "google_compute_firewall" "firewall_omnibus" {
   network = "default"
   allow {
     protocol = "tcp"
-    ports    = ["80", "443", "9292"]
+    ports    = ["80", "443", "9292", "2222"]
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["gitlab-ci-docker"]
+}
+
+resource "google_compute_disk" "gitlab_data_base" {
+  name = "gitlab-data-base"
+  type = "pd-standard"
+  zone = var.zone
+  size = "5"
 }
