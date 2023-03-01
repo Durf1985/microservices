@@ -1,14 +1,15 @@
 ---
-- name: Wait for infrastructure to become available
+- name: Wait 300 seconds, but only start checking after 60 seconds
   hosts: tag_reddit-app-{{ lookup('env', 'CI_COMMIT_REF_NAME') }}
-  become: true
   gather_facts: false
   tasks:
-    - name: Pause for 2 minutes
-      ansible.builtin.pause:
-        minutes: 2
+    - name: Wait_for_connection
+      ansible.builtin.wait_for_connection:
+        delay: 60
+        timeout: 300
 
-- name: Wait for infrastructure to become available
+
+- name: Deploy reddit microservice
   hosts: tag_reddit-app-{{ lookup('env', 'CI_COMMIT_REF_NAME') }}
   become: true
   gather_facts: true

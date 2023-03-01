@@ -13,13 +13,18 @@ cache:
     - "${TF_APP}/appuser.pub"
     - "${TF_APP}/terraform.tfvars"
 
-.terraform:build: &terraform_build
-  stage: build
+.terraform:init: &terraform_init
+  stage: deploy
   before_script:
   - cd "${TF_APP}"
   - echo "$APPUSER_PUB" > ./appuser.pub
   - mv ./terraform.tfvars.example ./terraform.tfvars
   - terraform init
+
+
+.terraform:build: &terraform_build
+  stage: build
+  extends: .terraform:init
   script:
     - terraform plan -out=./plan.cache
     - terraform workspace new ${CI_COMMIT_REF_NAME} || terraform workspace select ${CI_COMMIT_REF_NAME}
@@ -27,24 +32,19 @@ cache:
     paths:
       - ${TF_APP}/plan.cache
 
+
 .terraform:deploy: &terraform_deploy
   stage: deploy
-  before_script:
-  - cd "${TF_APP}"
-  - echo "$APPUSER_PUB" > ./appuser.pub
-  - terraform init
+  extends: .terraform:init
   script:
     - terraform apply -auto-approve=true
 
 
 .terraform:destroy: &terraform_destroy
   stage: cleanup
-  before_script:
-  - cd "${TF_APP}"
-  - echo "$APPUSER_PUB" > ./appuser.pub
-  - terraform init
+  extends: .terraform:init
   script:
-    - terraform workspace select ${CI_COMMIT_REF_NAME}
+    - terraform workspace select ${CI_COMMIT_REF_NAME} || exit 0
     - terraform destroy -auto-approve=true
     - terraform workspace select default
     - terraform workspace delete ${CI_COMMIT_REF_NAME}

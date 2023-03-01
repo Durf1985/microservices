@@ -1,6 +1,6 @@
 env: local
-deploy_user: appuser
+deploy_user: "foobar"
 reddit_microservice_vm_ip: 0.0.0.0
-reddit_docker_image_tag: "{{ lookup('env', 'CI_COMMIT_REF_NAME') }}"
-reddit_docker_user_name: "{{ lookup('env', 'DOCKER_HUB_USERNAME') }}"
-reddit_project_name: "dev_ops_learning"
+reddit_microservice_docker_image_tag: "latest"
+reddit_microservice_docker_user_name: "foobar"
+reddit_microservice_project_name: "foobar"
