@@ -1,0 +1,6 @@
+---
+- name: Launcher for container on VM instaces
+  hosts: tag_gitlab-ci-docker
+  become: true
+  roles:
+    - gitlab_runner

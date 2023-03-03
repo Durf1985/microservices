@@ -15,7 +15,7 @@
     state: present
 
 - name: Launch a Docker container
-  ansible.builtin.docker_container:
+  community.docker.docker_container:
     name: reddit
     image: "{{ reddit_monolith_docker_image }}"
     state: started

@@ -1,0 +1,115 @@
+image: ruby:2.4.2
+stages:
+  - build
+  - test
+  - review:infra
+  - review:app
+  - review:delete_infra
+  - stage
+  - production
+variables:
+  DATABASE_URL: "mongodb://mongo/user_posts"
+include:
+  -  /gitlab-ci/Base.gitlab-ci.yml
+
+build_job:
+  stage: build
+  image: docker:23.0.1-git
+  services:
+    - name: docker:23.0.1-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - docker info
+  script:
+    - echo 'Building with help docker-compose'
+    - mv ./src/.env.example ./src/.env
+    - cat ./src/.env
+    - docker-compose -f ./src/docker-compose.yml build
+    - docker images
+    - docker login --username "${DOCKER_HUB_USERNAME}" --password "${DOCKER_HUB_PASSWD}"
+    - docker-compose -f ./src/docker-compose.yml push
+
+test_unit_job:
+  stage: test
+  before_script:
+    - pwd
+    - cd reddit
+    - bundle install
+  services:
+    - mongo:3.2
+  script:
+    - ruby simpletest.rb
+
+test_integration_job:
+  stage: test
+  script:
+    - echo 'Testing 2'
+
+reddit vm build:
+  stage: review:infra
+  image: "fallgeratoor/gitlab-terraform:1.2"
+  extends:
+  - .terraform:build
+
+reddit vm deploy:
+  stage: review:infra
+  image: "fallgeratoor/gitlab-terraform:1.2"
+  extends: .terraform:deploy
+  needs:
+    - reddit vm build
+
+reddit app deploy:
+  stage: review:app
+  environment:
+    name: app/${CI_COMMIT_REF_NAME}
+    on_stop: reddit vm delete
+  variables:
+    ANSIBLE_CONFIG: ${CI_PROJECT_DIR}/docker-monolith/infra/ansible/ansible.cfg
+    deploy_user: appuser
+  image: fallgeratoor/gitlab-ansible:1.0
+  script:
+    - echo "$APPUSER" > ${CI_PROJECT_DIR}/appuser
+    - chmod 0600 ${CI_PROJECT_DIR}/appuser
+    - sed -i '\#vault_password_file = ~/.ansible/vault.key#d' $ANSIBLE_CONFIG
+    - chmod 755 ${CI_PROJECT_DIR}/docker-monolith/infra/ansible
+    - cd ${CI_PROJECT_DIR}/docker-monolith/infra/ansible
+    - mkdir ./gce_py
+    - echo "$GCLOUD_CREDENTIALS" > ./gce_py/docker-86505.json
+    - echo "$GCE_INI" > ./environments/stage/gce.ini
+    - ansible-inventory --list
+    - ansible-playbook playbooks/reddit_microservice.yml --extra-vars "@environments/stage/group_vars/vars.yml" --private-key=${CI_PROJECT_DIR}/appuser
+
+reddit vm delete:
+  stage: review:delete_infra
+  environment:
+    name: app/${CI_COMMIT_REF_NAME}
+    action: stop
+  image: "fallgeratoor/gitlab-terraform:1.2"
+  extends: .terraform:destroy
+  needs: []
+  when: manual
+
+staging:
+  stage: stage
+  when: manual
+  only:
+    - /^\d+\.\d+\.\d+/
+  script:
+    - echo 'Deploy'
+  environment:
+    name: stage
+    url: https://beta.example.com
+
+production:
+  stage: production
+  when: manual
+  only:
+    - /^\d+\.\d+\.\d+/
+  script:
+    - echo 'Deploy'
+  environment:
+    name: production
+    url: https://example.com

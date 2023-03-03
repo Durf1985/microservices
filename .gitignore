@@ -12,3 +12,4 @@ gce.ini
 docker-86505-7464b9391a64.json
 .molecule
 .env
+.gitlab-ci_copy.yml

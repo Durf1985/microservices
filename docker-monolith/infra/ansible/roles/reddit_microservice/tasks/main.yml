@@ -1,0 +1,28 @@
+---
+- name: Copying the docker-compose file to a remote machine
+  ansible.builtin.copy:
+    src: docker-compose.yml
+    dest: /home/{{ deploy_user }}/
+    # force: true
+    mode: '0644'
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+
+- name: Copying the .env file to a remote machine
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "/home/{{ deploy_user }}/.env"
+    mode: '0644'
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+
+
+- name: Running docker-compose on a remote machine
+  ansible.builtin.command: docker-compose -f /home/{{ deploy_user }}/docker-compose.yml up --no-build -d
+  register: start_docker_compose
+  failed_when: start_docker_compose.rc != 0
+  changed_when: >-
+    'Container dev_ops_learning-post_db-1  Running' not in start_docker_compose.stderr_lines or
+    'Container dev_ops_learning-post-1  Running' not in start_docker_compose.stderr_lines or
+    'Container dev_ops_learning-ui-1  Running' not in start_docker_compose.stderr_lines or
+    'Container dev_ops_learning-comment-1  Running' not in start_docker_compose.stderr_lines

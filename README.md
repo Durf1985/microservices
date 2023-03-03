@@ -90,3 +90,81 @@ The base name of a project is determined by `the name of the directory` that the
 By default, it can also be set by the `-p` or `--project-name` option when running `docker-compose` commands.
 This can be useful if you want to run multiple projects in the same directory. The name can be overridden by the `COMPOSE_PROJECT_NAME` environment variable
 in `.env` file.
+
+## Gitlab CI device. Building a Continuous Delivery Process
+
+### Install Omnibus
+
+* In the directory `path-to-your-repo/docker-monolith/infra/packer` run `packer build -var-file=variables.json app.json` this command will create an image with Docker and Docker-compose preinstalled
+
+* In the directory `path-to-your-repo/docker-monolith/infra/terraform/` , run `terraform init` and `terraform appy` to create a storage-bucket (add a unique suffix to the bucket name, for example, use the date 03032023 or the `timestamp()` function)
+
+* In the directory `path-to-your-repo/docker-monolith/infra/terraform/infra`  in the `backend.tf` file, specify the unique name of your `storage-bucket`
+
+* In the directory  `path-to-your-repo/docker-monolith/infra/terraform/app`  in the `backend.tf` file, specify the unique name of your `storage-bucket`
+
+* In the directory `path-to-your-repo/docker-monolith/infra/terraform/infra` , run `terraform init` and `terraform apply` to create a virtual machine using the baked image created earlier with the packer
+
+* Create a service account for your project in the GCP cloud <https://cloud.google.com/iam/docs/service-account-overview>
+
+* In the directory `path-to-your-repo/docker-monolith/infra/ansible/environments/stage` , copy everything you need to use the ansible dynamic inventory (gce.py and gce.ini). In the gce.ini file, enter the path to the service account authorization file in the directory `path-to-your-repo/docker-monolith/infra/ansible/gce_py/` (<https://github.com/hortonworks/ansible-hortonworks>)
+
+* In the directory `path-to-your-repo/docker-monolith/infra/ansible/` , run the command
+
+```bash
+ansible-playbook playbooks/gitlab_omnibus.yml # launching gitlab-ci
+ansible-playbook playbooks/gitlab_runner.yml # launching gitlab-runner for pipeline. To launch, you need to copy and paste the token into your role, which is launched by this playbook <https://docs.gitlab.com/runner/>
+ansible-playbook playbooks/attach_disk.yml # mounting an independent disk in which the cache of gitlab-ci and runner containers will be stored if you need to recreate a VM
+ansible-playbook playbooks/omnibus_password.yml # to get the root password at the first launch of gitlab-ci. The password file will be deleted a day after you log in to your gitlab-ci (it is recommended to change it)
+```
+
+### Setting up gitlab-ci
+
+* Either through terraform output or through the web interface of your project in GCP, find out the ip address of your VM with gitlab-ci installed
+
+* Use this ip address in the address bar of your browser to go to the gitlab-ci login page
+
+* Username `root` password you should get when executing `omnibus_password.yml`
+
+* After log in, follow the recommendation of the web interface to disable the ability to create new users.
+
+* Create a new group and create a new repository in the new group. In my case this is `homework`
+
+* Add an SSH key for secure access to GitLab. <https://docs.gitlab.com/ee/user/ssh.tml#use-ssh-keys-to-communicate-with-gitlab>
+
+* Add remote repository to your local host
+
+```bash
+ git remote add gitlab-ssh ssh://git@external_ip_your_vm:2222/homework/homework.git # pay attention to ssh:// just git@external_ip...homework.git it won't work
+```
+
+### Starting the pipeline
+
+* In the project settings, you should add the following variables and files ( manual how to add <https://docs.gitlab.com/ee/ci/variables/#gitlab-cicd-variables>)
+
+```bash
+# Variables
+APPUSER # your private key that you use to access the VM GCP when using terraform and ansible
+APPUSER_PUB # public key, for installation on VM
+DOCKER_HUB_USERNAME # your username on docker hub, use lower case
+DOCKER_HUB_PASSWD # password for your docker hub account
+GCE_INI # the contents of the gce.ini file must be identical to the one you specified when setting up the ansible inventory
+GCLOUD_CREDENTIALS # the value of the variable contains the credentials of your service account. Used for dynamic generation when the ansible is running
+
+# File
+GOOGLE_APPLICATION_CREDENTIALS # contains the credentials of your service account. (your_cred.json file). Used to work terraform in your pipeline
+
+# These files and variables will be used in your pipeline to provide authorizations and dynamic generation of some files inside your pipeline
+```
+
+* Pipeline startup parameters are described in the file `your_repo_path/gitlab-ci.yml`
+
+* The directory `your_repo_path/gitlab-ci/Docker_images/`  contains the directory `gitlab_ansible` and `gitlab_terraform` with dockerfiles, which are used to create images used in `gitlab-ci.yml` (`your_user_name/gitlab-terraform:your_tag` and `your_docker_hub_user_name/gitlab-ansible:your_tag`)
+
+* After perform a `git push` to the newly created repository, the pipeline for your project will be launched
+
+* When creating a virtual machine in your pipeline, a new dynamic workspace will be created each time, the name of your workspace will be the name of your gitlab brunch
+
+* The result of the pipeline execution will be a running Reddit Monolith application on a dynamically created VM. To access the application, use the external IP address of the newly created virtual machine. <http://your_external_ip:9292>
+
+After the successful launch of the application and the health check, you need to manually configure the deletion of your virtual machine and workspace by running the reddit vm delete job via `Deployments => Environments` section or directly in your `CI/CD pipeline` in web interface.

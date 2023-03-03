@@ -1,0 +1,7 @@
+---
+env: local
+gitlab_runner_registration_token: insert_your_token
+gitlab_runner_vm_ip: 0.0.0.0
+runner_name: my-runner
+gitlab_runner_gitlab_version: ubuntu-v15.8.2
+gitlab_runner_register_image_version: 3.17.2
