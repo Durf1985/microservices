@@ -168,3 +168,52 @@ GOOGLE_APPLICATION_CREDENTIALS # contains the credentials of your service accoun
 * The result of the pipeline execution will be a running Reddit Monolith application on a dynamically created VM. To access the application, use the external IP address of the newly created virtual machine. <http://your_external_ip:9292>
 
 After the successful launch of the application and the health check, you need to manually configure the deletion of your virtual machine and workspace by running the reddit vm delete job via `Deployments => Environments` section or directly in your `CI/CD pipeline` in web interface.
+
+## Monitoring systems
+
+### Preparing infrastructure
+
+* For Prometheus to work in GCP, you need to allow port 9090 in the firewall, for example, with the command
+
+```bash
+gcloud compute firewall-rules create prometheus-default --allow tcp:9090
+# You can also use terraform
+```
+
+* VM creation and environment switching
+
+```bash
+docker-machine create --driver google --google-project docker-86505 \
+    --google-machine-image https://www.googleapis.com/compute/v1/projects/your_project/global/images/your_image_with_docker_compose \
+    --google-machine-type n1-standard-1 \
+    --google-zone us-central1-a \
+    --google-disk-size 20 \
+    docker-host
+eval $(docker-machine env docker-host)
+```
+
+* Launch container with prometheus
+
+```bash
+docker run --rm -p 9090:9090 -d --name prometheus prom/prometheus:v2.37.6
+```
+
+* To test the operation of prometheus, follow the link <http://your_vm_ip_address:9090> to check the metrics that prometheus collects <http://your_vm_ip_address:9090/metrics> (after that you can delete a container)
+
+### Creating a monitoring system using docker-compose
+
+* monitoring uses custom docker images built in the `monitoring` directory, as well as ready-made images such as prom/node-exporter:v0.15.2 and percona/mongodb_exporter:2.35.0, their configuration is specified in docker/docker-compose.yml
+
+* You should also pay attention to the `monitoring/prometheus/prometheus.yml` file, which indicates what data and how Prometheus will collect.
+* also, many exporters can configure its own collection rules, for example, in the file `monitoring/blackbox/blackbox.yml`
+
+The directory `docker`  contains `docker-compose.yml`. This file has sections responsible for monitoring the rest of the infrastructure
+
+* run by command
+
+```bash
+cd docker
+docker-compose up -d
+```
+
+* to check the operation of the monitoring system, go to <http://your_vm_ip_address:9090>
