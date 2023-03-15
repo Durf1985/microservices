@@ -16,25 +16,31 @@ resource "google_compute_firewall" "prometheus" {
   name        = "prometheus-default"
   description = "Allow TCP traffic on port 9090 for Prometheus"
   network     = "default"
-
   allow {
     protocol = "tcp"
     ports    = ["9090"]
   }
-
   source_ranges = ["0.0.0.0/0"]
-
 }
+
 resource "google_compute_firewall" "puma" {
   name        = "puma-default"
   description = "Allow TCP traffic on port 9090 for Prometheus"
   network     = "default"
-
   allow {
     protocol = "tcp"
     ports    = ["9292"]
   }
-
   source_ranges = ["0.0.0.0/0"]
+}
 
+resource "google_compute_firewall" "cadvisor" {
+  name        = "cadvisor-default"
+  description = "Allow TCP traffic on port 8080 for cAdvisor"
+  network     = "default"
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
+  }
+  source_ranges = ["0.0.0.0/0"]
 }

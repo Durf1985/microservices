@@ -1,0 +1,72 @@
+version: '3.3'
+services:
+
+  prometheus:
+    image: ${DOCKER_HUB_USERNAME}/prometheus:2.37.6
+    ports:
+      - 9090:9090
+    volumes:
+      - prometheus_data/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention=1d'
+    networks:
+      - otus_front_net
+      - otus_back_net
+
+  node-exporter:
+    image: prom/node-exporter:v0.15.2
+    user: root
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+    networks:
+      - otus_back_net
+
+  mongodb-exporter:
+    image: percona/mongodb_exporter:2.35.0
+    ports:
+      - 9216:9216
+    command:
+      - '--discovering-mode'
+      - '--mongodb.uri=mongodb://post_db:27017'
+      # - '--compatible-mode'
+    networks:
+      - otus_back_net
+
+  blackbox-exporter:
+    image: fallgeratoor/blackbox:0.23.0
+    ports:
+      - 9115:9115
+    command:
+      - '--config.file=/config/blackbox.yml'
+    networks:
+      - otus_front_net
+
+  cadvisor:
+    image: google/cadvisor:v0.29.0
+    volumes:
+      - '/:/rootfs:ro'
+      - '/var/run:/var/run:rw'
+      - '/sys:/sys:ro'
+      - '/var/lib/docker/:/var/lib/docker:ro'
+    ports:
+      - '8080:8080'
+    networks:
+      - otus_front_net
+      - otus_back_net
+
+volumes:
+  prometheus_data:
+
+networks:
+  otus_front_net:
+    external: true
+  otus_back_net:
+    external: true
