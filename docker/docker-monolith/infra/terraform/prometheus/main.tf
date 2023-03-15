@@ -44,3 +44,14 @@ resource "google_compute_firewall" "cadvisor" {
   }
   source_ranges = ["0.0.0.0/0"]
 }
+
+resource "google_compute_firewall" "grafana" {
+  name = "grafana-default"
+  description = "Allow TCP traffic on port 3000 for Grafana"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "3000" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+}
