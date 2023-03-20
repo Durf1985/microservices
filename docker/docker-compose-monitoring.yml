@@ -14,6 +14,7 @@ services:
     networks:
       - otus_front_net
       - otus_back_net
+    restart: always
 
   node-exporter:
     image: prom/node-exporter:v0.15.2
@@ -28,6 +29,8 @@ services:
       - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
     networks:
       - otus_back_net
+    restart: always
+
 
   mongodb-exporter:
     image: percona/mongodb_exporter:2.35.0
@@ -39,6 +42,8 @@ services:
       # - '--compatible-mode'
     networks:
       - otus_back_net
+    restart: always
+
 
   blackbox-exporter:
     image: fallgeratoor/blackbox:0.23.0
@@ -48,6 +53,8 @@ services:
       - '--config.file=/config/blackbox.yml'
     networks:
       - otus_front_net
+    restart: always
+
 
   cadvisor:
     image: google/cadvisor:v0.29.0
@@ -60,10 +67,11 @@ services:
       - 8080:8080
     networks:
       - otus_front_net
-      - otus_back_net
+    restart: always
+
 
   grafana:
-    image: grafana/grafana:5.0.0
+    image: grafana/grafana:9.4.3
     volumes:
       - grafana_data:/var/lib/grafana
     environment:
@@ -75,6 +83,19 @@ services:
       - 3000:3000
     networks:
       - otus_front_net
+      - otus_back_net
+    restart: always
+
+  alertmanager:
+    image: ${DOCKER_HUB_USERNAME}/alertmanager:0.14.0
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+    ports:
+      - 9093:9093
+    networks:
+      - otus_front_net
+      - otus_back_net
+
 
 volumes:
   prometheus_data:

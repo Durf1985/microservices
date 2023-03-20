@@ -55,3 +55,14 @@ resource "google_compute_firewall" "grafana" {
   }
   source_ranges = [ "0.0.0.0/0" ]
 }
+
+resource "google_compute_firewall" "alertmanger" {
+  name = "alertmanger-default"
+  description = "Allow TCP traffic on port 9093 for Alertmanager"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "9093" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+}
