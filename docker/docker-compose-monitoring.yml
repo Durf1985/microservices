@@ -87,7 +87,7 @@ services:
     restart: always
 
   alertmanager:
-    image: ${DOCKER_HUB_USERNAME}/alertmanager:0.14.0
+    image: ${DOCKER_HUB_USERNAME}/alertmanager:0.25.0
     command:
       - '--config.file=/etc/alertmanager/config.yml'
     ports:

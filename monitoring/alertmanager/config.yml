@@ -1,0 +1,11 @@
+global:
+  slack_api_url: 'https://hooks.slack.com/services/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'
+
+route:
+  receiver: 'slack-notifications'
+
+receivers:
+- name: 'slack-notifications'
+  slack_configs:
+  - channel: '#aleksey_loktionov'
+    text: 'Something wrong'
