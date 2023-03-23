@@ -3,8 +3,6 @@ services:
 
   prometheus:
     image: ${DOCKER_HUB_USERNAME}/prometheus:2.37.6
-    ports:
-      - 9090:9090
     volumes:
       - prometheus_data/prometheus
     command:
@@ -34,12 +32,9 @@ services:
 
   mongodb-exporter:
     image: percona/mongodb_exporter:2.35.0
-    ports:
-      - 9216:9216
     command:
       - '--discovering-mode'
       - '--mongodb.uri=mongodb://post_db:27017'
-      # - '--compatible-mode'
     networks:
       - otus_back_net
     restart: always
@@ -47,8 +42,6 @@ services:
 
   blackbox-exporter:
     image: fallgeratoor/blackbox:0.23.0
-    ports:
-      - 9115:9115
     command:
       - '--config.file=/config/blackbox.yml'
     networks:
@@ -63,8 +56,6 @@ services:
       - '/var/run:/var/run:rw'
       - '/sys:/sys:ro'
       - '/var/lib/docker/:/var/lib/docker:ro'
-    ports:
-      - 8080:8080
     networks:
       - otus_front_net
     restart: always
@@ -76,11 +67,9 @@ services:
       - grafana_data:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=secret
-    depends_on:
-      - prometheus
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASS}
     ports:
-      - 3000:3000
+      - ${SRC_GRAFANA_PORT}:${DEST_GRAFANA_PORT}
     networks:
       - otus_front_net
       - otus_back_net
@@ -88,14 +77,12 @@ services:
 
   alertmanager:
     image: ${DOCKER_HUB_USERNAME}/alertmanager:0.25.0
-    command:
-      - '--config.file=/etc/alertmanager/config.yml'
-    ports:
-      - 9093:9093
+    environment:
+      - SLACK_WEBHOOK=${HOOK}
     networks:
       - otus_front_net
       - otus_back_net
-
+    restart: always
 
 volumes:
   prometheus_data:

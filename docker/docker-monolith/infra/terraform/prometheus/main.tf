@@ -66,3 +66,13 @@ resource "google_compute_firewall" "alertmanger" {
   }
   source_ranges = [ "0.0.0.0/0" ]
 }
+resource "google_compute_firewall" "consul" {
+  name = "consul-default"
+  description = "Allow TCP traffic on port 8500 for Consul"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "8500" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+}
