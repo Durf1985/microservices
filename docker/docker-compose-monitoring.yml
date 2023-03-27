@@ -84,6 +84,12 @@ services:
       - otus_back_net
     restart: always
 
+  telegraf:
+    image: ${DOCKER_HUB_USERNAME}/telegraf:1.26.0
+    networks:
+      - otus_back_net
+
+
 volumes:
   prometheus_data:
   grafana_data:

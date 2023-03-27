@@ -76,3 +76,13 @@ resource "google_compute_firewall" "consul" {
   }
   source_ranges = [ "0.0.0.0/0" ]
 }
+resource "google_compute_firewall" "telegraf" {
+  name = "telegraf-default"
+  description = "Allow TCP traffic on port 9273 for Telegraf"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "9273" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+}
