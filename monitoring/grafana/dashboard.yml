@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'Otus homework'
+    orgId: 1
+    folder: 'Otus-board'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/datasources/dashboards

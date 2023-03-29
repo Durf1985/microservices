@@ -16,25 +16,73 @@ resource "google_compute_firewall" "prometheus" {
   name        = "prometheus-default"
   description = "Allow TCP traffic on port 9090 for Prometheus"
   network     = "default"
-
   allow {
     protocol = "tcp"
     ports    = ["9090"]
   }
-
   source_ranges = ["0.0.0.0/0"]
-
 }
+
 resource "google_compute_firewall" "puma" {
   name        = "puma-default"
   description = "Allow TCP traffic on port 9090 for Prometheus"
   network     = "default"
-
   allow {
     protocol = "tcp"
     ports    = ["9292"]
   }
-
   source_ranges = ["0.0.0.0/0"]
+}
 
+resource "google_compute_firewall" "cadvisor" {
+  name        = "cadvisor-default"
+  description = "Allow TCP traffic on port 8080 for cAdvisor"
+  network     = "default"
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+}
+
+resource "google_compute_firewall" "grafana" {
+  name = "grafana-default"
+  description = "Allow TCP traffic on port 3000 for Grafana"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "3000" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+}
+
+resource "google_compute_firewall" "alertmanger" {
+  name = "alertmanger-default"
+  description = "Allow TCP traffic on port 9093 for Alertmanager"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "9093" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+}
+resource "google_compute_firewall" "consul" {
+  name = "consul-default"
+  description = "Allow TCP traffic on port 8500 for Consul"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "8500" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+}
+resource "google_compute_firewall" "telegraf" {
+  name = "telegraf-default"
+  description = "Allow TCP traffic on port 9273 for Telegraf"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "9273" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
 }

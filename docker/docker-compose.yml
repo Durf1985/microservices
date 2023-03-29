@@ -1,55 +1,6 @@
 version: '3.3'
 services:
 
-  prometheus:
-    image: ${DOCKER_HUB_USERNAME}/prometheus:2.37.6
-    ports:
-      - 9090:9090
-    volumes:
-      - prometheus_data/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention=1d'
-    networks:
-      - front_net
-      - back_net
-
-  node-exporter:
-    image: prom/node-exporter:v0.15.2
-    user: root
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
-    networks:
-      - back_net
-
-  mongodb-exporter:
-    image: percona/mongodb_exporter:2.35.0
-    ports:
-      - 9216:9216
-    command:
-      - '--discovering-mode'
-      - '--mongodb.uri=mongodb://post_db:27017'
-      # - '--compatible-mode'
-    networks:
-      - back_net
-
-  blackbox-exporter:
-    image: fallgeratoor/blackbox:0.23.0
-    ports:
-      - 9115:9115
-    command:
-      - '--config.file=/config/blackbox.yml'
-    networks:
-      - front_net
-
-
   post_db:
     image: mongo:${MONGO_VERSION}
     volumes:
@@ -84,7 +35,6 @@ services:
 
 volumes:
   post_db:
-  prometheus_data:
 
 networks:
   front_net:
