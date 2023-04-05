@@ -217,3 +217,28 @@ docker-compose up -d
 ```
 
 * to check the operation of the monitoring system, go to <http://your_vm_ip_address:9090>
+
+### Collecting docker container metrics
+
+The docker-compose.yml file contains the configuration of the containers responsible for the application. In the docker-compose-monitoring.yml file, the container configuration responsible for monitoring the state and collecting metrics was taken out.
+To collect metrics from containers, cAvisor is used, the standard access port is `8080`. By default, access is allowed only for prometheus, but you can do port forwarding in docker-compose-monitoring.yml
+In case of configuration changes, you need to rebuild images and rebuild containers.
+
+```bash
+docker build -t your_tag .
+docker push your_tag
+docker-compose rm -sf service_name
+docker-compose up -d service_name
+```
+
+### Visualizing metrics with Grafana
+
+The standard access port is `3000`. The your_repo/monitoring/grafana directory contains a file for building the image and then using it in a docker compose, also in this directory there is a dashboards directory that contains dashboards,
+which will be preinstalled after creating the container, you can place your own dashboard there.This is the entry point for a regular user, through which the user gets access to all the metrics that prometheus collects
+In case of configuration changes, you need to rebuild images and rebuild containers.
+
+### Alertmanager
+
+Alert triggering rules are configured through the `alerts.yml` file in the folder with the Prometheus image `your_repo/monitoring/prometheus`
+The channel to which the alert is sent is configured in the `config.yml` file located in the directory `your_repo/monitoring/alertmanager`
+In case of configuration changes, you need to rebuild images and rebuild containers.

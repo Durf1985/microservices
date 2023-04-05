@@ -19,6 +19,11 @@ services:
 
   post:
     image: ${DOCKER_HUB_USERNAME}/post:${POST_VERSION}
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
     networks:
       - front_net
       - back_net
