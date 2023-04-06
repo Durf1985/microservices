@@ -11,6 +11,11 @@ services:
 
   ui:
     image: ${DOCKER_HUB_USERNAME}/ui:${UI_VERSION}
+    logging:
+      driver:  fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: service.ui
     ports:
       - ${SRC_PORT}:${DEST_PORT}/tcp
     networks:
