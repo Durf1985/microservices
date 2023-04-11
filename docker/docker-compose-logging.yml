@@ -11,6 +11,7 @@ services:
       - "24224:24224/udp"
     networks:
       - otus_back_net
+    restart: always
 
   elasticsearch:
     image: elasticsearch:8.6.2
@@ -23,6 +24,7 @@ services:
       - "9200:9200"
     networks:
       - otus_back_net
+    restart: always
 
   kibana:
     image: ${DOCKER_HUB_USERNAME}/kibana:8.6.2
@@ -30,7 +32,7 @@ services:
       - "5601:5601"
     networks:
       - otus_back_net
-
+    restart: always
 
 networks:
   otus_back_net:
