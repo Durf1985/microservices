@@ -3,6 +3,8 @@ services:
 
   post_db:
     image: mongo:${MONGO_VERSION}
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
     volumes:
       - post_db:${POST_DB_VOLUME}
     networks:
@@ -21,6 +23,8 @@ services:
     networks:
       - front_net
     restart: always
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
 
   post:
     image: ${DOCKER_HUB_USERNAME}/post:${POST_VERSION}
@@ -33,6 +37,8 @@ services:
       - front_net
       - back_net
     restart: always
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
 
   comment:
     image: ${DOCKER_HUB_USERNAME}/comment:${COMMENT_VERSION}
@@ -42,6 +48,7 @@ services:
     restart: always
     environment:
       - COMMENT_DATABASE_HOST=post_db
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
 
 volumes:
   post_db:

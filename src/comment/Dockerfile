@@ -1,6 +1,7 @@
 FROM ubuntu:18.04
 ENV COMMENT_DATABASE_HOST comment_db
 ENV COMMENT_DATABASE comments
+ENV ZIPKIN_ENABLED=false
 RUN apt-get update -qq \
     && apt-get install -y --no-install-recommends \
     ruby-bundler=1.16.1-1 \

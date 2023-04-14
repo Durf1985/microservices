@@ -1,6 +1,7 @@
 FROM python:3.6.0-alpine
 ENV POST_DATABASE_HOST post_db
 ENV POST_DATABASE posts
+ENV ZIPKIN_ENABLED=false
 WORKDIR /app
 COPY ./requirements.txt /app
 RUN apk --no-cache --update add build-base=0.4-r1 gcc musl-dev && \

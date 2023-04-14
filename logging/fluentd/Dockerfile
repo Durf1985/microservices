@@ -1,5 +1,6 @@
 FROM fluent/fluentd:v1.16-1
 ENV ELASTIC_PASSWORD=some_password
+ENV ZIPKIN_ENABLED=false
 # Use root account to use apk
 USER root
 COPY entrypoint.sh /entrypoint.sh
