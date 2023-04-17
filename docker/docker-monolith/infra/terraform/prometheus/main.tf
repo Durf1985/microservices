@@ -86,3 +86,71 @@ resource "google_compute_firewall" "telegraf" {
   }
   source_ranges = [ "0.0.0.0/0" ]
 }
+
+resource "google_compute_firewall" "logging" {
+  name = "logging-default"
+  description = "Allow TCP trafic on port 5601 and 9411 for logging VM"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "5601", "9411" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+}
+
+resource "google_compute_firewall" "fluentd" {
+  name = "fluentd-default"
+  description = "Allow TCP trafic on port 24224:24224"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "24224" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+}
+
+resource "google_compute_firewall" "elastic" {
+  name = "elastic-default"
+  description = "Allow TCP trafic on port 9200"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "9200" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+
+}
+
+resource "google_compute_firewall" "zipkin" {
+  name = "zipkin-default"
+  description = "Allow TCP trafic on port 9411"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "9411" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+
+}
+resource "google_compute_firewall" "post" {
+  name = "post-default"
+  description = "Allow TCP trafic on port 5000"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "5000" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+
+}
+resource "google_compute_firewall" "mongo" {
+  name = "mongo-default"
+  description = "Allow TCP trafic on port 27017"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = [ "27017" ]
+  }
+  source_ranges = [ "0.0.0.0/0" ]
+
+}

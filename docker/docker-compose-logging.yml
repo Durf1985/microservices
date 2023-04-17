@@ -1,0 +1,55 @@
+version: '3'
+services:
+
+  fluentd:
+    image: ${DOCKER_HUB_USERNAME}/fluentd:1.16-1
+    container_name:  flu
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+      - ELASTIC_PASSWORD=${FLUENT_PASS_TO_ELASTIC}
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - otus_back_net
+    restart: always
+
+  elasticsearch:
+    image: ${DOCKER_HUB_USERNAME}/elasticsearch:8.6.2
+    container_name: ela
+    expose:
+      - 9200
+    environment:
+      - "discovery.type=single-node"
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    ports:
+      - "9200:9200"
+    networks:
+      - otus_back_net
+    restart: always
+
+  kibana:
+    image: ${DOCKER_HUB_USERNAME}/kibana:8.6.2
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    ports:
+      - "5601:5601"
+    networks:
+      - otus_back_net
+    restart: always
+
+  zipkin:
+    image: openzipkin/zipkin:2.24
+    ports:
+      - "9411:9411"
+    networks:
+      - otus_back_net
+      - otus_front_net
+    environment:
+      - HEALTHCHECK_IP=127.0.0.1
+
+networks:
+  otus_back_net:
+    external: true
+  otus_front_net:
+    external: true
