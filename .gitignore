@@ -15,3 +15,4 @@ docker-86505-7464b9391a64.json
 .gitlab-ci_copy.yml
 docker-compose-rebuild.sh
 flex_build_all.sh
+.vscode/settings.json
