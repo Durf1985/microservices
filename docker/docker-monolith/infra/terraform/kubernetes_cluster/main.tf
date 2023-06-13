@@ -20,8 +20,10 @@ resource "google_service_account" "default" {
 
 resource "google_container_cluster" "primary" {
   name     = "my-gke-cluster"
-  location = var.region
+  location = var.zone
+  
   node_config {
+    preemptible  = true
     disk_size_gb = 20
   }
 
@@ -34,13 +36,13 @@ resource "google_container_cluster" "primary" {
 
 resource "google_container_node_pool" "primary_preemptible_nodes" {
   name       = "my-node-pool"
-  location   = var.region
+  location   = var.zone
   cluster    = google_container_cluster.primary.name
   node_count = 1
 
   node_config {
     preemptible  = true
-    machine_type = "e2-medium"
+    machine_type = "e2-standard-2"
     disk_size_gb = 20
 
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
@@ -50,3 +52,10 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
     ]
   }
 }
+
+# resource "google_compute_disk" "reddit_mongo_disk" {
+#   name  = "reddit-mongo-disk"
+#   type  = "pd-standard"
+#   size  = 25
+#   zone  = var.zone
+# }
