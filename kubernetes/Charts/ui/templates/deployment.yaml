@@ -2,26 +2,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ui
+  name: {{ template "comment.fullname" . }}
   labels:
     app: reddit
     component: ui
+    release: {{ .Release.Name }}
 spec:
   replicas: 3
   selector:
     matchLabels:
       app: reddit
       component: ui
+      release: {{ .Release.Name }}
   template:
     metadata:
       name: ui
       labels:
         app: reddit
         component: ui
+        release: {{ .Release.Name }}
     spec:
       containers:
-      - image: fallgeratoor/ui:1.0
+      - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         name: ui
+        
         env:
           - name: ENV
             valueFrom:
