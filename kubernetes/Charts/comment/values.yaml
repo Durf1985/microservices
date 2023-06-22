@@ -6,4 +6,4 @@ service:
 image:
   repository:  fallgeratoor/comment
   tag: "1.0"
-databaseHost: comment-db
+databaseHost:

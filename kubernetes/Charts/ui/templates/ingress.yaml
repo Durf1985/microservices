@@ -4,7 +4,7 @@ metadata:
   name: {{ template "comment.fullname" . }}
   annotations:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    # nginx.ingress.kubernetes.io/rewrite-target: /{{ .Release.Name }}
     # kubernetes.io/ingress.class: gce-internal
   
 spec:
@@ -14,7 +14,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /{{ .Release.Name }}
+      - path: /
         pathType: Prefix
         backend:
           service:

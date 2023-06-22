@@ -6,3 +6,7 @@ service:
 image:
   repository: fallgeratoor/ui
   tag: "1.0"
+postHost:
+postPort:
+commentHost:
+commentPort:

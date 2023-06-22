@@ -7,4 +7,4 @@ image:
   repository: fallgeratoor/post
   tag: prometheus
 
-databaseHost: post-db
+databaseHost:

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: mongodb
+description: mongodb version docker image mongo:3.2
+version: 1.0.0
+maintainers: 
+  - name: Someone
+    email: my@email.com
+appVersion: "1.0"
