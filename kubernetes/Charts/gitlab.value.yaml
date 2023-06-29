@@ -1,0 +1,14 @@
+
+certmanager:
+  install: true
+certmanager-issuer:
+  email: durf19851@gmail.com
+global:
+  hosts:
+    domain: 35.194.16.158.nip.io
+    externalIP: 35.194.16.158
+postgresql:
+  image:
+    tag: 13.6.0
+runners:
+  privileged: true
