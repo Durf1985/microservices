@@ -11,4 +11,4 @@ postgresql:
   image:
     tag: 13.6.0
 runners:
-  privileged: true
+  privileged: false
