@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: comment-{{ .Release.Name }}-{{ .Chart.Name }}
+  name: {{ template "mongo.fullname" . }}
   labels:
     app: reddit
     component: mongo

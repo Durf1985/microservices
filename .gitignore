@@ -19,3 +19,4 @@ flex_build_all.sh
 *.crt
 *.key
 ui-ingress-secret.yml
+Gitlab_ci

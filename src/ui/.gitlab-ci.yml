@@ -6,6 +6,7 @@ stages:
   - test
   - review
   - release
+  - cleanup
 
 build:
   stage: build
@@ -39,14 +40,18 @@ release:
   only:
     - master
 
+trigger:
+  stage: release
+  trigger:
+    project: fallgeratoor/reddit-deploy
+    branch: master
+  needs:
+    - release
+
 review:
   stage: review
   image: fallgeratoor/helm:latest
   script:
-    - echo $PATH
-    - git clone -b master "$CI_SERVER_URL/$CI_PROJECT_NAMESPACE/reddit-deploy.git"
-    - helm dep update reddit-deploy/reddit
-    - gcloud auth activate-service-account --key-file="$GCLOUD_CREDENTIALS"
     - deploy
   variables:
     KUBE_NAMESPACE: review
@@ -54,11 +59,29 @@ review:
   environment:
     name: review/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME
     url: http://$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG
-    
+    on_stop: stop_review 
   only:
     refs:
       - branches
-    # kubernetes: active
+  except:
+    - master
+
+stop_review:
+  stage: cleanup
+  image: fallgeratoor/kubectl:pipeline
+  variables:
+    GIT_STRATEGY: none
+    KUBE_NAMESPACE: review
+  script:
+    - delete
+  environment:
+    name: review/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME
+    action: stop
+  when: manual
+  allow_failure: true
+  only:
+    refs:
+      - branches
   except:
     - master
 
@@ -68,16 +91,31 @@ review:
   export CI_APPLICATION_REPOSITORY=$CI_REGISTRY/$CI_PROJECT_PATH
   export CI_APPLICATION_TAG=$CI_COMMIT_REF_SLUG
   export CI_CONTAINER_NAME=ci_job_build_${CI_JOB_ID}
-  
+
+  function build() {
+    echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$(echo -n "$CI_REGISTRY_USER":"$CI_REGISTRY_PASSWORD" | base64)\"}}}" > /kaniko/.docker/config.json 
+    /kaniko/executor \
+     --context "${CI_PROJECT_DIR}" \
+     --dockerfile "${CI_PROJECT_DIR}/Dockerfile" \
+     --destination "${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG}"  
+  }
+
+  function release() {
+    crane auth login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    crane tag "${CI_APPLICATION_REPOSITORY}":"${CI_APPLICATION_TAG}" "$(cat VERSION)"
+    echo "$CI_APPLICATION_TAG"
+  }
 
   function deploy() {
+    git clone -b master "$CI_SERVER_URL/$CI_PROJECT_NAMESPACE/reddit-deploy.git"
+    helm dep update reddit-deploy/reddit
+    gcloud auth activate-service-account --key-file="$GCLOUD_CREDENTIALS"
+
     track="${1-stable}"
     name="$CI_ENVIRONMENT_SLUG"
-
     if [[ "$track" != "stable" ]]; then
       name="$name-$track"
     fi
-
     echo "Deploy helm release $name to $KUBE_NAMESPACE"
     helm upgrade --install \
       --wait \
@@ -90,25 +128,10 @@ review:
       reddit-deploy/reddit/
   }
 
-  
-
- 
- 
-
-  function release() {
-    crane auth login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    crane tag "${CI_APPLICATION_REPOSITORY}":"${CI_APPLICATION_TAG}" "$(cat VERSION)"
+  function delete() {
+    gcloud auth activate-service-account --key-file="$GCLOUD_CREDENTIALS"
+    kubectl delete namespace "$KUBE_NAMESPACE" || true
   }
-
-  function build() {
-
-    echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$(echo -n "$CI_REGISTRY_USER":"$CI_REGISTRY_PASSWORD" | base64)\"}}}" > /kaniko/.docker/config.json 
-    /kaniko/executor \
-     --context "${CI_PROJECT_DIR}" \
-     --dockerfile "${CI_PROJECT_DIR}/Dockerfile" \
-     --destination "${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG}"  
-  }
- 
 
 before_script:
   - *auto_devops

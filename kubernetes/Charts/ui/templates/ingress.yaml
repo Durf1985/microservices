@@ -10,7 +10,7 @@ metadata:
 spec:
   tls:
     - secretName: ui-ingress
-  ingressClassName: nginx
+  ingressClassName: gitlab-nginx
   rules:
   - http:
       paths:

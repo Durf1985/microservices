@@ -12,3 +12,7 @@ postgresql:
     tag: 13.6.0
 runners:
   privileged: false
+nginx-ingress:
+  controller:
+    scope:
+      enabled: false
