@@ -16,3 +16,7 @@ docker-86505-7464b9391a64.json
 docker-compose-rebuild.sh
 flex_build_all.sh
 .vscode/settings.json
+*.crt
+*.key
+ui-ingress-secret.yml
+Gitlab_ci
