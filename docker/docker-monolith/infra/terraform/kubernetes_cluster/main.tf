@@ -19,15 +19,14 @@ resource "google_service_account" "default" {
 }
 
 resource "google_container_cluster" "primary" {
-  name     = "my-gke-cluster"
-  location = var.zone
-  
+  name               = "my-gke-cluster"
+  location           = var.zone
+  logging_service    = "none"
+  monitoring_service = "none"
   node_config {
     preemptible  = true
     disk_size_gb = 30
   }
-
- 
   remove_default_node_pool = true
   initial_node_count       = 1
 }
@@ -36,20 +35,19 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
   name       = "my-node-pool"
   location   = var.zone
   cluster    = google_container_cluster.primary.name
-  node_count = 1
-
+  node_count = 4
   node_config {
     preemptible  = true
-    machine_type = "e2-standard-4"
+    machine_type = "e2-standard-2"
     disk_size_gb = 30
-
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
     service_account = google_service_account.default.email
-    oauth_scopes    = [
+    oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
   }
 }
+
 resource "google_compute_address" "gitlab_ip" {
   name   = "gitlab-ip"
   region = "us-central1"
