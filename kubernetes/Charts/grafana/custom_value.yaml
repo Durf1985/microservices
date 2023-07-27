@@ -1,0 +1,11 @@
+adminPassword: 
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts:
+  - reddit-grafana
+service:
+  type: NodePort
+persistence:
+  enabled: true
+  storageClassName: common-reddit-storage
