@@ -3,8 +3,26 @@ prometheus-pushgateway:
   enabled: false
 
 alertmanager:
-  enabled: false
+  enabled: true
+  config:
+    global: 
+      slack_api_url: %%slack%%
 
+    templates:reddit-prometheus
+      - '/etc/alertmanager/*.tmpl'
+
+    receivers:
+      - name: 'slack-notifications'
+        slack_configs:
+         - channel: '#aleksey_loktionov'
+           text: 'Something wrong'
+        #    send_resolved: true
+    route:
+      group_wait: 1s
+      receiver: slack-notifications
+
+
+      
 prometheus-node-exporter:
 
   enabled: true
@@ -21,6 +39,20 @@ server:
     hosts: [reddit-prometheus]
 
 serverFiles:
+  alerting_rules.yml: 
+    groups:
+    - name: NodeRules
+      rules:
+      - alert: PodNotRunning
+        expr: kube_pod_status_phase{phase!="Running"} == 1
+        for: 1s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod {{ $labels.pod }} is not running"
+          description: "The pod {{ $labels.pod }} has been in a non-running state for more than 1 second."
+
+
   prometheus.yml:
     scrape_configs:
       - job_name: prometheus
