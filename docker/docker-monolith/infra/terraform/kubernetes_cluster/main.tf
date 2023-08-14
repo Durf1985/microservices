@@ -31,11 +31,11 @@ resource "google_container_cluster" "primary" {
   initial_node_count       = 1
 }
 
-resource "google_container_node_pool" "primary_preemptible_nodes" {
-  name       = "my-node-pool"
+resource "google_container_node_pool" "small_preemptible_nodes" {
+  name       = "standard-2"
   location   = var.zone
   cluster    = google_container_cluster.primary.name
-  node_count = 4
+  node_count = 2
   node_config {
     preemptible  = true
     machine_type = "e2-standard-2"
@@ -45,6 +45,25 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
+  }
+}
+resource "google_container_node_pool" "big_preemptible_node" {
+  name       = "standard-4"
+  location   = var.zone
+  cluster    = google_container_cluster.primary.name
+  node_count = 1
+  node_config {
+    preemptible  = true
+    machine_type = "e2-standard-4"
+    disk_size_gb = 30
+    # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
+    service_account = google_service_account.default.email
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+    labels = {
+      "elastichost" = "true"
+    }
   }
 }
 
