@@ -1,0 +1,9 @@
+dependencies:
+- name: elasticsearch
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 19.10.6
+- name: fluentd
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 5.8.7
+digest: sha256:465e3254cbf8fb70770d3f626db9d6395c9059d058a3b8f690dd29ff5cd58de0
+generated: "2023-08-16T21:30:38.420782084+07:00"
