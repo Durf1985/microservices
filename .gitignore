@@ -20,3 +20,4 @@ flex_build_all.sh
 *.key
 ui-ingress-secret.yml
 Gitlab_ci
+charts

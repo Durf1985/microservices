@@ -1,0 +1,97 @@
+elasticsearch:
+  global:
+    kibanaEnabled: true
+
+  kibana:
+    ingress:
+      enabled: true
+      hostname: reddit-kibana
+      ingressClassName: nginx
+      tls: true
+      selfSigned: true
+  security:
+    enabled: false
+    elasticPassword: asdfasdfs
+
+fluentd:
+  forwarder:
+    configMapFiles:
+      fluentd.conf: |
+        # Ignore fluentd own events
+        <match fluent.**>
+          @type null
+        </match>
+
+        @include fluentd-inputs.conf
+        @include fluentd-output.conf
+        {{- if .Values.metrics.enabled }}
+        @include metrics.conf
+        {{- end }}
+      fluentd-inputs.conf: |
+        # HTTP input for the liveness and readiness probes
+        <source>
+          @type http
+          port 9880
+        </source>
+        # Get the logs from the containers running in the node
+        <source>
+          @type tail
+          path /var/log/containers/*.log
+          # exclude Fluentd logs
+          exclude_path /var/log/containers/*fluentd*.log
+          pos_file /opt/bitnami/fluentd/logs/buffers/fluentd-docker.pos
+          tag kubernetes.*
+          read_from_head true
+          <parse>
+            @type regexp
+            expression /^(?<time>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z)\s(?<stream>[^\s]+)\s(?<log_level>[^\s]+)\s(?<message>.*)$/
+            time_format %Y-%m-%dT%H:%M:%S.%NZ
+          </parse>
+        </source>
+        # enrich with kubernetes metadata
+        {{- if or .Values.forwarder.serviceAccount.create .Values.forwarder.serviceAccount.name }}
+        <filter kubernetes.**>
+          @type kubernetes_metadata
+        </filter>
+        {{- end }}
+      fluentd-output.conf: |
+        <match **>
+          @type elasticsearch
+          host "#{ENV['FLUENT_ELASTICSEARCH_HOST'] || 'efk-elasticsearch'}"
+          port "#{ENV['FLUENT_ELASTICSEARCH_PORT'] || '9200'}"
+          user "#{ENV['FLUENT_ELASTICSEARCH_USER'] || 'elastic'}"
+          password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD'] || 'asdfasdfs'}"
+          scheme "#{ENV['FLUENT_ELASTICSEARCH_SCHEME'] || 'http'}"
+          index_name kube_containers
+          type_name fluentd
+          time_key time
+          include_timestamp true
+        </match>
+      metrics.conf: |
+        # Prometheus Exporter Plugin
+        # input plugin that exports metrics
+        <source>
+          @type prometheus
+          port {{ .Values.metrics.service.port }}
+        </source>
+        # input plugin that collects metrics from MonitorAgent
+        <source>
+          @type prometheus_monitor
+          <labels>
+            host ${hostname}
+          </labels>
+        </source>
+        # input plugin that collects metrics for output plugin
+        <source>
+          @type prometheus_output_monitor
+          <labels>
+            host ${hostname}
+          </labels>
+        </source>
+        # input plugin that collects metrics for in_tail plugin
+        <source>
+          @type prometheus_tail_monitor
+          <labels>
+            host ${hostname}
+          </labels>
+        </source>
